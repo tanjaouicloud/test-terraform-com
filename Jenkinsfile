@@ -4,7 +4,7 @@ pipeline {
   environment {
     TF_VERSION = '1.6.0'
     TERRAFORM_COMPLIANCE_VERSION = '1.3.15'
-    REPO_URL = 'https://github.com/your-org/terraform-compliance-example.git'
+    REPO_URL = 'https://github.com/tanjaouicloud/test-terraform-com.git'
   }
 
   stages {
