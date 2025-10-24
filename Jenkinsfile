@@ -30,18 +30,29 @@ pipeline {
       steps {
         script {
           def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-          def logPath = "/home/khalid/desktop/compliance-log-${timestamp}.log"
-          sh """
-            export PATH=\$PATH:/var/lib/jenkins/.local/bin
-            terraform-compliance --no-color -p tfplan.json -f compliance/ > ${logPath}
-          """
-          // Archive le fichier de log dans Jenkins (copie dans workspace)
-          sh "cp ${logPath} compliance-log-${timestamp}.log"
-          archiveArtifacts artifacts: "compliance-log-${timestamp}.log", allowEmptyArchive: false
+          def desktopLogPath = "/home/khalid/desktop/compliance-log-${timestamp}.log"
+          def workspaceLogPath = "compliance-log-${timestamp}.log"
 
-          // Affiche le contenu du log dans la console Jenkins
-          def output = readFile("compliance-log-${timestamp}.log")
+          // Exécution avec redirection du log
+          def complianceStatus = sh(
+            script: """
+              export PATH=\$PATH:/var/lib/jenkins/.local/bin
+              terraform-compliance --no-color -p tfplan.json -f compliance/ > ${desktopLogPath}
+              cp ${desktopLogPath} ${workspaceLogPath}
+            """,
+            returnStatus: true
+          )
+
+          // Archivage du log
+          archiveArtifacts artifacts: workspaceLogPath, allowEmptyArchive: false
+          // Affichage dans la console Jenkins
+          def output = readFile(workspaceLogPath)
           echo output
+
+          // Échec du build si terraform-compliance échoue
+          if (complianceStatus != 0) {
+            error("Terraform-compliance failed. See log for details.")
+          }
         }
       }
     }
