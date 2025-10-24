@@ -4,18 +4,21 @@ pipeline {
   environment {
     TF_VERSION = '1.6.0'
     TERRAFORM_COMPLIANCE_VERSION = '1.3.15'
-    AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
-    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
   }
 
   stages {
     stage('Terraform Init & Plan') {
       steps {
-        sh '''
-          terraform init
-          terraform plan -out=tfplan.binary
-          terraform show -json tfplan.binary > tfplan.json
-        '''
+        withCredentials([
+          string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+          string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+        ]) {
+          sh '''
+            terraform init
+            terraform plan -out=tfplan.binary
+            terraform show -json tfplan.binary > tfplan.json
+          '''
+        }
       }
     }
 
