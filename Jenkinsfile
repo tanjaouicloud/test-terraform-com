@@ -30,7 +30,7 @@ pipeline {
       steps {
         script {
           def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
-          def logPath = "/home/khalid/Desktop/compliance-log-${timestamp}.log"
+          def logPath = "/home/khalid/desktop/compliance-log-${timestamp}.log"
           sh """
             export PATH=\$PATH:/var/lib/jenkins/.local/bin
             terraform-compliance -p tfplan.json -f compliance/ > ${logPath}
