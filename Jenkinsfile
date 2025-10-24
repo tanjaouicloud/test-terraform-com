@@ -10,10 +10,13 @@ pipeline {
     stage('Terraform Init & Plan') {
       steps {
         withCredentials([
-          string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
-          string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+          string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'),
+          string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY')
         ]) {
           sh '''
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+
             terraform init
             terraform plan -out=tfplan.binary
             terraform show -json tfplan.binary > tfplan.json
