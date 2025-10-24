@@ -3,7 +3,8 @@ pipeline {
 
   environment {
     TF_VERSION = '1.6.0'
-    TERRAFORM_COMPLIANCE_VERSION = '1.3.15'
+    TERRAFORM_COMPLIANCE_VERSION = '1.13.0'
+    PATH = "/var/lib/jenkins/.local/bin:$PATH"
   }
 
   stages {
@@ -28,7 +29,7 @@ pipeline {
     stage('Run terraform-compliance') {
       steps {
         sh '''
-          pip install terraform-compliance fpdf
+          export PATH=$PATH:/var/lib/jenkins/.local/bin
           terraform-compliance -p tfplan.json -f compliance/ > compliance_result.txt
         '''
       }
