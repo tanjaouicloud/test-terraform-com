@@ -43,15 +43,18 @@ pipeline {
             returnStatus: true
           )
 
-          // Archivage du log
-          archiveArtifacts artifacts: workspaceLogPath, allowEmptyArchive: false
-          // Affichage dans la console Jenkins
-          def output = readFile(workspaceLogPath)
-          echo output
+          // Vérification et archivage
+          if (fileExists(workspaceLogPath)) {
+            archiveArtifacts artifacts: workspaceLogPath, allowEmptyArchive: false
+            def output = readFile(workspaceLogPath)
+            echo output
+          } else {
+            echo "⚠️ Fichier de log introuvable : ${workspaceLogPath}"
+          }
 
-          // Échec du build si terraform-compliance échoue
+          // Échec du pipeline si terraform-compliance échoue
           if (complianceStatus != 0) {
-            error("Terraform-compliance failed. See log for details.")
+            error("❌ Terraform-compliance a échoué. Voir le log pour les détails.")
           }
         }
       }
@@ -60,10 +63,10 @@ pipeline {
 
   post {
     always {
-      echo 'Pipeline finished. Compliance log saved on Desktop and archived.'
+      echo '✅ Pipeline terminé. Le log de conformité est enregistré sur le bureau et archivé.'
     }
     failure {
-      echo 'Terraform compliance tests failed.'
+      echo '❌ Échec des tests de conformité Terraform.'
     }
   }
 }
