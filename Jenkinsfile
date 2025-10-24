@@ -33,8 +33,15 @@ pipeline {
           def logPath = "/home/khalid/desktop/compliance-log-${timestamp}.log"
           sh """
             export PATH=\$PATH:/var/lib/jenkins/.local/bin
-            terraform-compliance -p tfplan.json -f compliance/ > ${logPath}
+            terraform-compliance --no-color -p tfplan.json -f compliance/ > ${logPath}
           """
+          // Archive le fichier de log dans Jenkins (copie dans workspace)
+          sh "cp ${logPath} compliance-log-${timestamp}.log"
+          archiveArtifacts artifacts: "compliance-log-${timestamp}.log", allowEmptyArchive: false
+
+          // Affiche le contenu du log dans la console Jenkins
+          def output = readFile("compliance-log-${timestamp}.log")
+          echo output
         }
       }
     }
@@ -42,7 +49,7 @@ pipeline {
 
   post {
     always {
-      echo 'Pipeline finished. Check Desktop for compliance log.'
+      echo 'Pipeline finished. Compliance log saved on Desktop and archived.'
     }
     failure {
       echo 'Terraform compliance tests failed.'
