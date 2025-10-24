@@ -4,6 +4,8 @@ pipeline {
   environment {
     TF_VERSION = '1.6.0'
     TERRAFORM_COMPLIANCE_VERSION = '1.3.15'
+    AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+    AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
   }
 
   stages {
@@ -52,6 +54,7 @@ pdf = PDFReport()
 pdf.add_page()
 pdf.add_content(content)
 pdf.output('rapport_terraform_compliance.pdf')" > generate_report.py
+
           python3 generate_report.py
         '''
       }
