@@ -28,49 +28,21 @@ pipeline {
 
     stage('Run terraform-compliance') {
       steps {
-        sh '''
-          export PATH=$PATH:/var/lib/jenkins/.local/bin
-          terraform-compliance -p tfplan.json -f compliance/ > compliance_result.txt
-        '''
-      }
-    }
-
-    stage('Generate PDF Report') {
-      steps {
-        sh '''
-          echo "from fpdf import FPDF
-with open('compliance_result.txt') as f:
-    content = f.read()
-
-class PDFReport(FPDF):
-    def header(self):
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 10, 'Terraform Compliance Report', ln=True, align='C')
-        self.ln(10)
-
-    def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}', align='C')
-
-    def add_content(self, text):
-        self.set_font('Arial', '', 12)
-        self.multi_cell(0, 10, text)
-
-pdf = PDFReport()
-pdf.add_page()
-pdf.add_content(content)
-pdf.output('rapport_terraform_compliance.pdf')" > generate_report.py
-
-          python3 generate_report.py
-        '''
+        script {
+          def timestamp = new Date().format("yyyy-MM-dd-HH-mm")
+          def logPath = "/home/khalid/Desktop/compliance-log-${timestamp}.log"
+          sh """
+            export PATH=\$PATH:/var/lib/jenkins/.local/bin
+            terraform-compliance -p tfplan.json -f compliance/ > ${logPath}
+          """
+        }
       }
     }
   }
 
   post {
     always {
-      archiveArtifacts artifacts: 'rapport_terraform_compliance.pdf', fingerprint: true
+      echo 'Pipeline finished. Check Desktop for compliance log.'
     }
     failure {
       echo 'Terraform compliance tests failed.'
